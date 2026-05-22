@@ -1,0 +1,141 @@
+#root {
+  min-height: 100vh;
+}
+
+.app-shell {
+  display: grid;
+  gap: 1rem;
+  margin: 0 auto;
+  max-width: 980px;
+  padding: 1rem;
+}
+
+.hero-card,
+.panel {
+  border: 1px solid rgb(125 31 54 / 12%);
+  border-radius: 28px;
+  background: rgb(255 250 247 / 88%);
+  box-shadow: 0 24px 60px rgb(80 31 22 / 10%);
+  padding: clamp(1.2rem, 4vw, 2rem);
+}
+
+.hero-card {
+  background:
+    radial-gradient(circle at 85% 10%, rgb(125 31 54 / 18%), transparent 28%),
+    linear-gradient(135deg, #fff7f2, #f1ddd3);
+}
+
+.eyebrow {
+  color: #7d1f36;
+  font-size: 0.8rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  margin: 0 0 0.6rem;
+  text-transform: uppercase;
+}
+
+h1,
+h2,
+h3,
+p {
+  margin-top: 0;
+}
+
+h1 {
+  color: #411512;
+  font-size: clamp(3rem, 12vw, 6.5rem);
+  letter-spacing: -0.08em;
+  line-height: 0.9;
+  margin-bottom: 0.8rem;
+}
+
+h2 {
+  color: #411512;
+  font-size: clamp(1.4rem, 4vw, 2rem);
+  letter-spacing: -0.04em;
+}
+
+h3 {
+  color: #411512;
+  margin-bottom: 0.35rem;
+}
+
+.tagline {
+  color: #6a1f32;
+  font-size: clamp(1.25rem, 4vw, 2rem);
+  font-weight: 850;
+  letter-spacing: -0.03em;
+  margin-bottom: 0.4rem;
+}
+
+.promise,
+.empty-state,
+.meta {
+  color: #795c55;
+}
+
+.memory-form,
+.panel {
+  display: grid;
+  gap: 1rem;
+}
+
+.segmented {
+  display: grid;
+  gap: 0.6rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.segmented label {
+  align-items: center;
+  border: 1px solid #ead7cf;
+  border-radius: 18px;
+  display: flex;
+  gap: 0.6rem;
+  padding: 0.8rem;
+}
+
+.segmented input {
+  margin: 0;
+  width: auto;
+}
+
+.memory-list {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.memory-card,
+.recommendation-card {
+  border: 1px solid #ead7cf;
+  border-radius: 22px;
+  background: #fffaf7;
+  padding: 1rem;
+}
+
+.signals {
+  color: #7d1f36;
+  font-weight: 850;
+  margin-bottom: 0.5rem;
+}
+
+.meta {
+  font-size: 0.9rem;
+  margin-bottom: 0;
+}
+
+.error {
+  color: #b42318;
+  font-weight: 800;
+}
+
+@media (min-width: 820px) {
+  .app-shell {
+    grid-template-columns: 1fr 1fr;
+    padding: 2rem;
+  }
+
+  .hero-card {
+    grid-column: 1 / -1;
+  }
+}
