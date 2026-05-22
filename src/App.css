@@ -108,11 +108,39 @@ h3 {
 
 .memory-card,
 .recommendation-card,
+.price-scout-card,
 .recognition-card {
   border: 1px solid #ead7cf;
   border-radius: 22px;
   background: #fffaf7;
   padding: 1rem;
+}
+
+.price-option-list {
+  display: grid;
+  gap: 0.7rem;
+}
+
+.price-option {
+  border-top: 1px solid #ead7cf;
+  display: grid;
+  gap: 0.25rem;
+  padding-top: 0.7rem;
+}
+
+.price-option span {
+  color: #7d1f36;
+  font-weight: 850;
+}
+
+.secondary-action {
+  background: #fffaf7;
+  color: #7d1f36;
+  border: 1px solid #d7aaa0;
+}
+
+.secondary-action:hover {
+  background: #fff2ec;
 }
 
 .signals {

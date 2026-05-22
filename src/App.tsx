@@ -2,6 +2,7 @@ import { useMemo, useState, type FormEvent } from 'react'
 import './App.css'
 import { recognizeBottleFromImage, type BottleRecognitionResult } from './domain/bottleRecognition'
 import { extractPreferenceSignals, flattenSignals } from './domain/preferenceExtraction'
+import { findCheaperNearbyWineOptions, type NearbyWinePriceOption } from './domain/nearbyPriceSearch'
 import { recommendWineMemories, type WineRecommendation } from './domain/recommendWineMemories'
 import { searchWineMemories } from './domain/searchWineMemories'
 import { createWineMemory, type WineMemory } from './domain/wineMemory'
@@ -33,6 +34,7 @@ function App() {
   const [searchQuery, setSearchQuery] = useState('')
   const [recommendationPrompt, setRecommendationPrompt] = useState('')
   const [recommendations, setRecommendations] = useState<WineRecommendation[]>([])
+  const [nearbyPriceOptions, setNearbyPriceOptions] = useState<NearbyWinePriceOption[]>([])
   const [recognition, setRecognition] = useState<BottleRecognitionResult | null>(null)
   const [isRecognizing, setIsRecognizing] = useState(false)
   const [error, setError] = useState('')
@@ -87,9 +89,25 @@ function App() {
 
       setMemories((current) => [memory, ...current])
       setForm(initialForm)
+      setNearbyPriceOptions([])
       setRecommendations([])
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : 'Could not save wine memory')
+    }
+  }
+
+  function findCheaperNearby() {
+    setError('')
+    const options = findCheaperNearbyWineOptions({
+      wineName: form.name || recognition?.bottle.name,
+      currentPrice: form.price,
+      locationLabel: form.location || 'near your current location',
+    })
+
+    setNearbyPriceOptions(options)
+
+    if (options.length === 0) {
+      setError('Add a price first so Vinophobia can scout cheaper nearby options.')
     }
   }
 
@@ -194,6 +212,28 @@ function App() {
               placeholder="$14.99"
             />
           </label>
+
+          <button type="button" className="secondary-action" onClick={findCheaperNearby}>
+            Find cheaper nearby
+          </button>
+
+          {nearbyPriceOptions.length > 0 ? (
+            <div className="price-scout-card">
+              <p className="eyebrow">Nearby cheaper options</p>
+              <h3>Prototype price scout</h3>
+              <div className="price-option-list">
+                {nearbyPriceOptions.map((option) => (
+                  <article className="price-option" key={`${option.storeName}-${option.price}`}>
+                    <strong>{option.storeName}</strong>
+                    <span>
+                      ${option.price.toFixed(2)} · save ${option.savings.toFixed(2)} · {option.distanceMiles} mi
+                    </span>
+                    <p className="meta">{option.note}</p>
+                  </article>
+                ))}
+              </div>
+            </div>
+          ) : null}
 
           {error ? <p className="error">{error}</p> : null}
           <button type="submit">Save wine memory</button>

@@ -45,6 +45,12 @@ describe('Vinophobia app', () => {
     expect(await screen.findByText('Layer Cake Malbec')).toBeInTheDocument()
     expect(screen.getByText(/Mendoza, Argentina/)).toBeInTheDocument()
 
+    await user.type(screen.getByLabelText('Price optional'), '$18.99')
+    await user.click(screen.getByRole('button', { name: 'Find cheaper nearby' }))
+
+    expect(await screen.findByText('Nearby cheaper options')).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Prototype price scout' })).toBeInTheDocument()
+
     await user.clear(screen.getByLabelText('Wine name optional'))
     await user.type(screen.getByLabelText('Wine name optional'), 'Pasta Night Red')
     await user.clear(screen.getByLabelText('What do you remember?'))
