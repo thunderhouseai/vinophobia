@@ -1,5 +1,6 @@
 import { useMemo, useState, type FormEvent } from 'react'
 import './App.css'
+import { recognizeBottleFromImage, type BottleRecognitionResult } from './domain/bottleRecognition'
 import { extractPreferenceSignals, flattenSignals } from './domain/preferenceExtraction'
 import { recommendWineMemories, type WineRecommendation } from './domain/recommendWineMemories'
 import { searchWineMemories } from './domain/searchWineMemories'
@@ -32,6 +33,8 @@ function App() {
   const [searchQuery, setSearchQuery] = useState('')
   const [recommendationPrompt, setRecommendationPrompt] = useState('')
   const [recommendations, setRecommendations] = useState<WineRecommendation[]>([])
+  const [recognition, setRecognition] = useState<BottleRecognitionResult | null>(null)
+  const [isRecognizing, setIsRecognizing] = useState(false)
   const [error, setError] = useState('')
 
   const visibleMemories = useMemo(
@@ -41,6 +44,31 @@ function App() {
 
   function updateForm(field: keyof FormState, value: string) {
     setForm((current) => ({ ...current, [field]: value }))
+  }
+
+  async function handleBottlePhoto(file: File | undefined) {
+    if (!file) {
+      return
+    }
+
+    setIsRecognizing(true)
+    setError('')
+
+    try {
+      const result = await recognizeBottleFromImage(file)
+      setRecognition(result)
+      if (result.status === 'recognized') {
+        setForm((current) => ({
+          ...current,
+          name: current.name || result.bottle.name,
+          note: current.note || `Captured ${result.bottle.name}. Add what you liked about it.`,
+        }))
+      }
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : 'Could not recognize bottle photo')
+    } finally {
+      setIsRecognizing(false)
+    }
   }
 
   function saveMemory(event: FormEvent<HTMLFormElement>) {
@@ -74,12 +102,38 @@ function App() {
         <p className="eyebrow">AI wine memory, minus the snobbery</p>
         <h1 id="product-title">Vinophobia</h1>
         <p className="tagline">Remember what you liked. Find it again.</p>
-        <p className="promise">Tell it like a normal human: “smooth red with pasta” is enough.</p>
+        <p className="promise">Snap the bottle at purchase. Vinophobia recognizes it, then remembers why it mattered.</p>
       </section>
 
       <section className="panel" aria-labelledby="save-memory-title">
-        <h2 id="save-memory-title">Save a wine memory</h2>
+        <h2 id="save-memory-title">Capture a bottle</h2>
         <form onSubmit={saveMemory} className="memory-form">
+          <label className="photo-upload">
+            Take or upload bottle photo
+            <input
+              type="file"
+              accept="image/*"
+              capture="environment"
+              onChange={(event) => void handleBottlePhoto(event.target.files?.[0])}
+            />
+          </label>
+
+          {isRecognizing ? <p className="recognition-card">Recognizing bottle…</p> : null}
+
+          {recognition ? (
+            <div className="recognition-card">
+              <p className="eyebrow">AI bottle recognition</p>
+              <h3>{recognition.bottle.name}</h3>
+              <p>
+                {[recognition.bottle.varietal, recognition.bottle.region].filter(Boolean).join(' · ') ||
+                  'Needs manual confirmation'}
+              </p>
+              <p className="meta">
+                Confidence {Math.round(recognition.bottle.confidence * 100)}% · {recognition.note}
+              </p>
+            </div>
+          ) : null}
+
           <label>
             Wine name optional
             <input

@@ -106,7 +106,8 @@ h3 {
 }
 
 .memory-card,
-.recommendation-card {
+.recommendation-card,
+.recognition-card {
   border: 1px solid #ead7cf;
   border-radius: 22px;
   background: #fffaf7;
@@ -122,6 +123,19 @@ h3 {
 .meta {
   font-size: 0.9rem;
   margin-bottom: 0;
+}
+
+.photo-upload {
+  border: 2px dashed rgb(125 31 54 / 28%);
+  border-radius: 22px;
+  background: #fff2ec;
+  padding: 1rem;
+}
+
+.photo-upload input {
+  background: transparent;
+  border: 0;
+  padding-left: 0;
 }
 
 .error {

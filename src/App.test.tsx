@@ -16,7 +16,15 @@ describe('Vinophobia app', () => {
     const user = userEvent.setup()
     render(<App />)
 
+    const bottlePhoto = new File(['fake image bytes'], 'layer-cake-malbec-label.jpg', { type: 'image/jpeg' })
+    await user.upload(screen.getByLabelText('Take or upload bottle photo'), bottlePhoto)
+
+    expect(await screen.findByText('Layer Cake Malbec')).toBeInTheDocument()
+    expect(screen.getByText(/Mendoza, Argentina/)).toBeInTheDocument()
+
+    await user.clear(screen.getByLabelText('Wine name optional'))
     await user.type(screen.getByLabelText('Wine name optional'), 'Pasta Night Red')
+    await user.clear(screen.getByLabelText('What do you remember?'))
     await user.type(screen.getByLabelText('What do you remember?'), 'smooth red with pasta and not too dry')
     await user.type(screen.getByLabelText('Where did you find it? optional'), "Trader Joe's")
     await user.click(screen.getByRole('button', { name: 'Save wine memory' }))
