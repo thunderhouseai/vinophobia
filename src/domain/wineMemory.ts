@@ -1,9 +1,12 @@
+import type { RecognizedBottle } from './bottleRecognition'
+
 export type WineMemoryInput = {
   name?: string
   note: string
   liked: boolean
   location?: string
   price?: string
+  bottle?: RecognizedBottle
 }
 
 export type WineMemory = WineMemoryInput & {

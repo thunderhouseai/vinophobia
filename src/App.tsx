@@ -82,6 +82,7 @@ function App() {
         liked: form.liked === 'liked',
         location: form.location,
         price: form.price,
+        bottle: recognition?.status === 'recognized' ? recognition.bottle : undefined,
       })
 
       setMemories((current) => [memory, ...current])
@@ -221,6 +222,11 @@ function App() {
                   <p>{memory.note}</p>
                 </div>
                 <p className="signals">{signalSummary(memory)}</p>
+                {memory.bottle ? (
+                  <p className="bottle-details">
+                    Bottle: {[memory.bottle.varietal, memory.bottle.region].filter(Boolean).join(' · ')}
+                  </p>
+                ) : null}
                 <p className="meta">
                   {memory.liked ? 'Liked' : 'Not for me'}
                   {memory.location ? ` · ${memory.location}` : ''}
