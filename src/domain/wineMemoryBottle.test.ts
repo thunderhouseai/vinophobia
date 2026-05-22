@@ -13,7 +13,7 @@ describe('createWineMemory with bottle recognition context', () => {
         varietal: 'Malbec',
         region: 'Mendoza, Argentina',
         confidence: 0.82,
-        source: 'prototype-ai-placeholder',
+        source: 'claude-vision',
       },
     })
 

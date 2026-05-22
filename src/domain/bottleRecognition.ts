@@ -4,8 +4,10 @@ export type RecognizedBottle = {
   varietal?: string
   region?: string
   vintage?: string
+  country?: string
+  rawVisibleText?: string[]
   confidence: number
-  source: 'prototype-ai-placeholder'
+  source: 'claude-vision' | 'prototype-ai-placeholder'
 }
 
 export type BottleRecognitionResult = {
@@ -14,51 +16,83 @@ export type BottleRecognitionResult = {
   note: string
 }
 
-const prototypeMatches: Array<{ pattern: RegExp; bottle: Omit<RecognizedBottle, 'source'> }> = [
-  {
-    pattern: /layer[-_\s]?cake|malbec/i,
-    bottle: {
-      name: 'Layer Cake Malbec',
-      producer: 'Layer Cake',
-      varietal: 'Malbec',
-      region: 'Mendoza, Argentina',
-      confidence: 0.82,
-    },
-  },
-  {
-    pattern: /meiomi|pinot/i,
-    bottle: {
-      name: 'Meiomi Pinot Noir',
-      producer: 'Meiomi',
-      varietal: 'Pinot Noir',
-      region: 'California',
-      confidence: 0.78,
-    },
-  },
-]
+type BottleRecognitionApiResponse = {
+  status?: 'recognized' | 'needs-confirmation'
+  bottle?: Partial<RecognizedBottle>
+  note?: string
+}
 
-export async function recognizeBottleFromImage(file: File): Promise<BottleRecognitionResult> {
-  const filename = file.name.toLowerCase()
-  const match = prototypeMatches.find((candidate) => candidate.pattern.test(filename))
+function isNonEmptyString(value: unknown): value is string {
+  return typeof value === 'string' && value.trim().length > 0
+}
 
-  if (!match) {
-    return {
-      status: 'needs-confirmation',
-      bottle: {
-        name: 'Unrecognized bottle',
-        confidence: 0.2,
-        source: 'prototype-ai-placeholder',
-      },
-      note: 'Prototype recognition could not infer the bottle yet. Real AI/OCR service should replace this placeholder.',
-    }
+function normalizeConfidence(value: unknown): number {
+  if (typeof value !== 'number' || Number.isNaN(value)) {
+    return 0.2
   }
+
+  if (value > 1) {
+    return Math.max(0, Math.min(1, value / 100))
+  }
+
+  return Math.max(0, Math.min(1, value))
+}
+
+function normalizeRawVisibleText(value: unknown): string[] | undefined {
+  if (!Array.isArray(value)) {
+    return undefined
+  }
+
+  const text = value.filter(isNonEmptyString).map((item) => item.trim())
+  return text.length > 0 ? text : undefined
+}
+
+function normalizeBottleRecognition(payload: BottleRecognitionApiResponse): BottleRecognitionResult {
+  const bottle = payload.bottle ?? {}
+  const name = isNonEmptyString(bottle.name) ? bottle.name.trim() : 'Unrecognized bottle'
+  const confidence = normalizeConfidence(bottle.confidence)
+  const status = payload.status ?? (confidence >= 0.55 && name !== 'Unrecognized bottle' ? 'recognized' : 'needs-confirmation')
 
   return {
-    status: 'recognized',
+    status,
     bottle: {
-      ...match.bottle,
-      source: 'prototype-ai-placeholder',
+      name,
+      producer: isNonEmptyString(bottle.producer) ? bottle.producer.trim() : undefined,
+      varietal: isNonEmptyString(bottle.varietal) ? bottle.varietal.trim() : undefined,
+      region: isNonEmptyString(bottle.region) ? bottle.region.trim() : undefined,
+      vintage: isNonEmptyString(bottle.vintage) ? bottle.vintage.trim() : undefined,
+      country: isNonEmptyString(bottle.country) ? bottle.country.trim() : undefined,
+      rawVisibleText: normalizeRawVisibleText(bottle.rawVisibleText),
+      confidence,
+      source: 'claude-vision',
     },
-    note: 'Prototype recognition based on filename. Replace with AI vision/OCR bottle recognition service.',
+    note:
+      payload.note ??
+      (status === 'recognized'
+        ? 'Claude Vision recognized the bottle. Please confirm before saving.'
+        : 'Claude Vision could not confidently identify the bottle. Manual confirmation needed.'),
   }
+}
+
+export async function recognizeBottleFromImage(file: File): Promise<BottleRecognitionResult> {
+  const formData = new FormData()
+  formData.append('photo', file)
+
+  const response = await fetch('/api/recognize-bottle', {
+    method: 'POST',
+    body: formData,
+  })
+
+  const payload = (await response.json().catch(() => null)) as BottleRecognitionApiResponse | { error?: string } | null
+
+  if (!response.ok) {
+    const errorMessage = payload && 'error' in payload && payload.error ? payload.error : 'Bottle recognition service failed'
+    throw new Error(errorMessage)
+  }
+
+  if (!payload || !('bottle' in payload)) {
+    throw new Error('Bottle recognition service returned an invalid response')
+  }
+
+  return normalizeBottleRecognition(payload)
 }

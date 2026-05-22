@@ -1,9 +1,13 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import App from './App'
 
 describe('Vinophobia app', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals()
+  })
+
   it('presents the mobile-first wine memory promise', () => {
     render(<App />)
 
@@ -13,6 +17,25 @@ describe('Vinophobia app', () => {
   })
 
   it('saves, searches, and recommends a casual wine memory', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          status: 'recognized',
+          bottle: {
+            name: 'Layer Cake Malbec',
+            producer: 'Layer Cake',
+            varietal: 'Malbec',
+            region: 'Mendoza, Argentina',
+            confidence: 0.82,
+            source: 'claude-vision',
+          },
+          note: 'Claude Vision recognized the bottle. Confirm the fields before saving.',
+        }),
+      }),
+    )
+
     const user = userEvent.setup()
     render(<App />)
 
