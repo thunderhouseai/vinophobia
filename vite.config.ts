@@ -243,21 +243,24 @@ function bottleRecognitionApiPlugin(): Plugin {
     name: 'vinophobia-bottle-recognition-api',
     configureServer(server) {
       server.middlewares.use('/api/recognize-bottle', handler)
+      server.middlewares.use('/vinophobia/api/recognize-bottle', handler)
     },
     configurePreviewServer(server) {
       server.middlewares.use('/api/recognize-bottle', handler)
+      server.middlewares.use('/vinophobia/api/recognize-bottle', handler)
     },
   }
 }
 
 // https://vite.dev/config/
 export default defineConfig({
+  base: '/vinophobia/',
   plugins: [react(), bottleRecognitionApiPlugin()],
   server: {
-    allowedHosts: ['vinophobia.thunderhouseai.com'],
+    allowedHosts: ['vinophobia.thunderhouseai.com', 'thunderhouseai.com', 'www.thunderhouseai.com'],
   },
   preview: {
-    allowedHosts: ['vinophobia.thunderhouseai.com'],
+    allowedHosts: ['vinophobia.thunderhouseai.com', 'thunderhouseai.com', 'www.thunderhouseai.com'],
   },
   test: {
     environment: 'jsdom',

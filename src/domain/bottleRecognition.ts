@@ -78,7 +78,7 @@ export async function recognizeBottleFromImage(file: File): Promise<BottleRecogn
   const formData = new FormData()
   formData.append('photo', file)
 
-  const response = await fetch('/api/recognize-bottle', {
+  const response = await fetch(`${import.meta.env.BASE_URL}api/recognize-bottle`, {
     method: 'POST',
     body: formData,
   })
