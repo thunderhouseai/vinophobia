@@ -253,6 +253,12 @@ function bottleRecognitionApiPlugin(): Plugin {
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react(), bottleRecognitionApiPlugin()],
+  server: {
+    allowedHosts: ['vinophobia.thunderhouseai.com'],
+  },
+  preview: {
+    allowedHosts: ['vinophobia.thunderhouseai.com'],
+  },
   test: {
     environment: 'jsdom',
     setupFiles: './src/testSetup.ts',
